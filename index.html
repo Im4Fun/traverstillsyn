@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#161a1d">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Travers">
+<title>Daglig tillsyn traverser</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Inter:wght@400;500;600&family=Roboto+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+/* ── KONFIGURATION ────────────────────────────────────────────
+   Klistra in din Apps Script-URL i APPS_SCRIPT_URL längre ned
+   i <script>-blocket.
+   ──────────────────────────────────────────────────────────── */
+
+:root {
+  --bg:        #161a1d;
+  --panel:     #1e2429;
+  --panel-2:   #262d33;
+  --line:      #333c44;
+  --text:      #e8ecef;
+  --muted:     #8d99a3;
+  --accent:    #f5a623;
+  --accent-dk: #b87a12;
+  --green:     #3fb950;
+  --yellow:    #e3b341;
+  --red:       #f0523f;
+  --blue:      #4a9fd8;
+  --radius:    10px;
+  --shadow:    0 2px 10px rgba(0,0,0,.35);
+}
+
+html[data-tema="ljust"] {
+  --bg:      #f2f4f6;
+  --panel:   #ffffff;
+  --panel-2: #eaeef1;
+  --line:    #d3dae0;
+  --text:    #1b2126;
+  --muted:   #67727c;
+  --accent:  #c97b05;
+  --accent-dk: #a56404;
+  --green:   #1f8b34;
+  --yellow:  #b8860b;
+  --red:     #cf3520;
+  --blue:    #1e6fa8;
+  --shadow:  0 2px 10px rgba(0,0,0,.10);
+}
+
+html[data-tema="klassiskt"] {
+  --bg:      #10243a;
+  --panel:   #17324f;
+  --panel-2: #1f3f61;
+  --line:    #2d5279;
+  --text:    #e6eef6;
+  --muted:   #93aac0;
+  --accent:  #ffc94d;
+  --accent-dk: #c99a24;
+  --green:   #4cc463;
+  --yellow:  #ffd166;
+  --red:     #ff6b52;
+  --blue:    #63b3e8;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  padding-bottom: env(safe-area-inset-bottom);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, .tab, .btn, .grupp-rubrik {
+  font-family: 'Archivo', system-ui, sans-serif;
+}
+
+.mono { font-family: 'Roboto Mono', monospace; }
+
+.wrap { max-width: 780px; margin: 0 auto; padding: 0 14px 40px; }
+
+/* ── Topp ── */
+header {
+  position: sticky; top: 0; z-index: 40;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  padding: calc(10px + env(safe-area-inset-top)) 14px 0;
+}
+.header-inner {
+  max-width: 780px; margin: 0 auto;
+  display: flex; align-items: center; gap: 10px;
+}
+.logo {
+  width: 30px; height: 30px; flex: none;
+  border-radius: 7px;
+  background: var(--accent);
+  display: grid; place-items: center;
+  color: #16191c; font-weight: 700; font-size: 15px;
+  font-family: 'Archivo', sans-serif;
+}
+.titel { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+.subtitel { font-size: 11px; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+.header-hoger { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+
+.ikonknapp {
+  background: var(--panel-2); border: 1px solid var(--line); color: var(--text);
+  width: 34px; height: 34px; border-radius: 8px; font-size: 15px;
+  cursor: pointer; display: grid; place-items: center;
+}
+.ikonknapp:hover { border-color: var(--accent); }
+
+.natstatus {
+  font-size: 10px; padding: 3px 7px; border-radius: 20px;
+  border: 1px solid var(--line); color: var(--muted);
+  letter-spacing: .04em; white-space: nowrap;
+}
+.natstatus.offline { color: var(--red); border-color: var(--red); }
+.natstatus.kö { color: var(--yellow); border-color: var(--yellow); }
+
+/* ── Flikar ── */
+.tabbar {
+  display: flex; gap: 4px; overflow-x: auto;
+  max-width: 780px; margin: 8px auto 0; padding-bottom: 0;
+  scrollbar-width: none;
+}
+.tabbar::-webkit-scrollbar { display: none; }
+.tab {
+  background: none; border: none; color: var(--muted);
+  padding: 9px 12px; font-size: 12.5px; font-weight: 600;
+  letter-spacing: .05em; cursor: pointer; white-space: nowrap;
+  border-bottom: 2px solid transparent;
+}
+.tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.badge {
+  display: inline-block; min-width: 17px; padding: 1px 5px; margin-left: 4px;
+  background: var(--panel-2); border-radius: 9px;
+  font-size: 10px; color: var(--text); font-family: 'Roboto Mono', monospace;
+}
+.badge.varning { background: var(--red); color: #fff; }
+
+.sida { display: none; padding-top: 16px; }
+.sida.active { display: block; }
+
+/* ── Kort ── */
+.kort {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 14px; margin-bottom: 10px;
+}
+
+.avsnitt {
+  font-size: 11px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--muted); font-weight: 600;
+  margin: 22px 0 8px; padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+}
+.avsnitt:first-child { margin-top: 0; }
+
+/* ── Formulär ── */
+.falt { margin-bottom: 12px; }
+.falt label {
+  display: block; font-size: 12px; color: var(--muted);
+  margin-bottom: 5px; font-weight: 500;
+}
+input, select, textarea {
+  width: 100%; padding: 10px 11px;
+  background: var(--panel-2); color: var(--text);
+  border: 1px solid var(--line); border-radius: 8px;
+  font-family: inherit; font-size: 15px;
+}
+input:focus, select:focus, textarea:focus {
+  outline: 2px solid var(--accent); outline-offset: -1px; border-color: var(--accent);
+}
+textarea { resize: vertical; min-height: 70px; }
+.rad-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.btn {
+  width: 100%; padding: 12px; border: none; border-radius: 8px;
+  background: var(--accent); color: #16191c;
+  font-size: 14.5px; font-weight: 600; cursor: pointer; letter-spacing: .01em;
+}
+.btn:hover:not(:disabled) { background: var(--accent-dk); color: #fff; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn.sekundar { background: var(--panel-2); color: var(--text); border: 1px solid var(--line); }
+.btn.sekundar:hover:not(:disabled) { border-color: var(--accent); background: var(--panel-2); color: var(--text); }
+.btn.fara { background: var(--red); color: #fff; }
+.btn.liten { width: auto; padding: 7px 12px; font-size: 12.5px; }
+
+/* ── Inloggning ── */
+#login-vy {
+  min-height: 100vh; display: grid; place-items: center; padding: 20px;
+}
+.login-kort {
+  width: 100%; max-width: 340px;
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 14px; padding: 26px; box-shadow: var(--shadow);
+}
+.login-logo {
+  width: 48px; height: 48px; border-radius: 11px; background: var(--accent);
+  display: grid; place-items: center; margin: 0 auto 14px;
+  font-family: 'Archivo', sans-serif; font-weight: 700; font-size: 21px; color: #16191c;
+}
+.login-kort h1 { font-size: 19px; margin: 0 0 4px; text-align: center; }
+.login-kort .doknr {
+  text-align: center; color: var(--muted); font-size: 11px;
+  margin-bottom: 22px; letter-spacing: .06em;
+}
+
+/* ── Traverslista ── */
+.travers-rad {
+  display: flex; align-items: center; gap: 11px;
+  background: var(--panel); border: 1px solid var(--line);
+  border-left: 3px solid var(--line);
+  border-radius: var(--radius); padding: 11px 13px; margin-bottom: 7px;
+  cursor: pointer; text-align: left; width: 100%;
+  color: var(--text); font-family: inherit; font-size: inherit;
+}
+.travers-rad:hover { border-color: var(--accent); }
+.travers-rad.gron { border-left-color: var(--green); }
+.travers-rad.gul  { border-left-color: var(--yellow); }
+.travers-rad.rod  { border-left-color: var(--red); }
+.travers-rad.grå  { border-left-color: var(--muted); }
+
+.travers-nr {
+  font-family: 'Roboto Mono', monospace; font-weight: 600; font-size: 13px;
+  background: var(--panel-2); border-radius: 6px;
+  padding: 5px 7px; min-width: 46px; text-align: center; flex: none;
+}
+.travers-info { flex: 1; min-width: 0; }
+.travers-plats { font-weight: 600; font-size: 14px; }
+.travers-typ {
+  font-size: 11.5px; color: var(--muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.travers-status { font-size: 11px; margin-top: 3px; }
+.s-gron { color: var(--green); } .s-gul { color: var(--yellow); }
+.s-rod { color: var(--red); }   .s-grå { color: var(--muted); }
+
+.flagga {
+  display: inline-block; font-size: 9.5px; font-weight: 600;
+  padding: 2px 6px; border-radius: 4px; letter-spacing: .05em;
+  background: var(--red); color: #fff; margin-left: 6px; vertical-align: 1px;
+}
+
+/* ── Checklista ── */
+.grupp-rubrik {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 13px; font-weight: 700; letter-spacing: .02em;
+  margin: 18px 0 7px; text-transform: uppercase;
+}
+.grupp-nr {
+  width: 21px; height: 21px; border-radius: 5px; flex: none;
+  background: var(--accent); color: #16191c;
+  display: grid; place-items: center;
+  font-size: 11px; font-family: 'Roboto Mono', monospace; font-weight: 600;
+}
+
+.punkt {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 11px 13px; margin-bottom: 7px;
+}
+.punkt.anmarkt { border-color: var(--red); }
+.punkt-topp { display: flex; gap: 9px; align-items: flex-start; }
+.punkt-nr {
+  font-family: 'Roboto Mono', monospace; font-size: 12px;
+  color: var(--muted); flex: none; padding-top: 2px; min-width: 24px;
+}
+.punkt-text { flex: 1; font-size: 13.5px; line-height: 1.45; }
+
+.val { display: flex; gap: 6px; margin-top: 9px; }
+.val button {
+  flex: 1; padding: 9px 6px; border-radius: 7px;
+  background: var(--panel-2); border: 1px solid var(--line);
+  color: var(--muted); font-family: 'Archivo', sans-serif;
+  font-size: 12.5px; font-weight: 600; cursor: pointer;
+}
+.val button.vald-ok { background: var(--green); border-color: var(--green); color: #fff; }
+.val button.vald-anm { background: var(--red); border-color: var(--red); color: #fff; }
+.val button.vald-ea { background: var(--muted); border-color: var(--muted); color: #fff; }
+
+.anm-falt { margin-top: 9px; }
+.anm-falt textarea { min-height: 56px; font-size: 14px; }
+
+.rad-hjalp {
+  background: none; border: none; color: var(--blue);
+  font-size: 11.5px; cursor: pointer; padding: 4px 0 0 33px;
+  font-family: inherit; text-align: left;
+}
+.hjalptext {
+  display: none; margin: 7px 0 0 33px; padding: 9px 11px;
+  background: var(--panel-2); border-left: 2px solid var(--blue);
+  border-radius: 0 6px 6px 0; font-size: 12.5px;
+  color: var(--muted); line-height: 1.5;
+}
+.hjalptext.oppen { display: block; }
+
+/* ── Varningsruta ── */
+.varning {
+  background: rgba(240,82,63,.10); border: 1px solid var(--red);
+  border-radius: var(--radius); padding: 12px 13px; margin-bottom: 12px;
+  font-size: 13px; line-height: 1.5;
+}
+.varning strong { color: var(--red); }
+.info {
+  background: var(--panel-2); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 12px 13px; margin-bottom: 12px;
+  font-size: 12.5px; color: var(--muted); line-height: 1.5;
+}
+
+/* ── Historik ── */
+.hist-rad {
+  background: var(--panel); border: 1px solid var(--line);
+  border-left: 3px solid var(--green);
+  border-radius: var(--radius); padding: 11px 13px; margin-bottom: 7px;
+}
+.hist-rad.anm { border-left-color: var(--red); }
+.hist-topp { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.hist-tid { font-family: 'Roboto Mono', monospace; font-size: 12px; color: var(--muted); }
+.hist-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.hist-anm {
+  margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line);
+  font-size: 12.5px;
+}
+.hist-anm-rad { color: var(--red); margin-bottom: 3px; }
+
+/* ── Statistik ── */
+.stat-rutnat { display: grid; grid-template-columns: repeat(2, 1fr); gap: 9px; margin-bottom: 16px; }
+.stat-ruta {
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 13px;
+}
+.stat-varde { font-family: 'Roboto Mono', monospace; font-size: 25px; font-weight: 600; }
+.stat-etikett {
+  font-size: 10.5px; color: var(--muted); text-transform: uppercase;
+  letter-spacing: .06em; margin-top: 2px;
+}
+.stapel-rad { margin-bottom: 9px; }
+.stapel-topp { display: flex; justify-content: space-between; font-size: 12.5px; margin-bottom: 3px; }
+.stapel-bg { height: 7px; background: var(--panel-2); border-radius: 4px; overflow: hidden; }
+.stapel-fyll { height: 100%; background: var(--accent); border-radius: 4px; }
+
+/* ── Admin-listor ── */
+.lista-rad {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: var(--radius); padding: 10px 12px; margin-bottom: 6px;
+}
+.lista-info { flex: 1; min-width: 0; }
+.lista-namn { font-weight: 600; font-size: 14px; }
+.lista-meta { font-size: 11.5px; color: var(--muted); }
+.roll-tagg {
+  font-size: 9.5px; font-weight: 600; padding: 2px 6px; border-radius: 4px;
+  letter-spacing: .05em; text-transform: uppercase;
+}
+.roll-admin { background: var(--accent); color: #16191c; }
+.roll-personal { background: var(--panel-2); color: var(--muted); }
+.radera-knapp {
+  background: none; border: 1px solid var(--line); color: var(--red);
+  border-radius: 6px; padding: 5px 9px; font-size: 12px; cursor: pointer; flex: none;
+}
+.radera-knapp:hover { border-color: var(--red); }
+
+/* ── Toast ── */
+#toast {
+  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(80px);
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 9px; padding: 11px 17px; font-size: 13.5px;
+  box-shadow: var(--shadow); z-index: 100; opacity: 0;
+  transition: transform .25s, opacity .25s; max-width: 90vw; text-align: center;
+}
+#toast.visa { transform: translateX(-50%) translateY(0); opacity: 1; }
+#toast.fel { border-color: var(--red); }
+#toast.ok { border-color: var(--green); }
+
+.tom {
+  text-align: center; color: var(--muted);
+  padding: 34px 16px; font-size: 13.5px;
+}
+.laddar { text-align: center; color: var(--muted); padding: 30px; font-size: 13.5px; }
+
+.sokfalt { margin-bottom: 12px; }
+
+.tillbaka {
+  background: none; border: none; color: var(--accent);
+  font-size: 13px; cursor: pointer; padding: 0 0 10px;
+  font-family: inherit; font-weight: 500;
+}
+
+@media (max-width: 420px) {
+  .rad-2 { grid-template-columns: 1fr; }
+  .stat-rutnat { grid-template-columns: 1fr 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- ══ INLOGGNING ══ -->
+<div id="login-vy">
+  <div class="login-kort">
+    <div class="login-logo">T</div>
+    <h1>Daglig tillsyn</h1>
+    <div class="doknr">FRM-08075 · Traverser och telfrar</div>
+
+    <div class="falt">
+      <label for="login-namn">Namn</label>
+      <input type="text" id="login-namn" autocomplete="username" placeholder="För- och efternamn">
+    </div>
+    <div class="falt">
+      <label for="login-pin">PIN-kod</label>
+      <input type="password" id="login-pin" inputmode="numeric" autocomplete="current-password" placeholder="••••">
+    </div>
+    <button class="btn" id="login-knapp" onclick="loggaIn()">Logga in</button>
+    <div id="login-fel" style="color:var(--red);font-size:12.5px;margin-top:10px;text-align:center;display:none"></div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div id="app-vy" style="display:none">
+  <header>
+    <div class="header-inner">
+      <div class="logo">T</div>
+      <div>
+        <div class="titel">Daglig tillsyn</div>
+        <div class="subtitel" id="user-etikett">–</div>
+      </div>
+      <div class="header-hoger">
+        <span class="natstatus" id="natstatus">Online</span>
+        <button class="ikonknapp" onclick="bytTema()" title="Byt tema">◐</button>
+        <button class="ikonknapp" onclick="loggaUt()" title="Logga ut">⏻</button>
+      </div>
+    </div>
+    <div class="tabbar">
+      <button class="tab active" data-sida="objekt" onclick="visaSida('objekt')">+ NY</button>
+      <button class="tab" data-sida="historik" onclick="visaSida('historik')">HISTORIK <span class="badge" id="hist-badge">0</span></button>
+      <button class="tab admin-bara" data-sida="stats" onclick="visaSida('stats')" style="display:none">STATS</button>
+      <button class="tab admin-bara" data-sida="traverser" onclick="visaSida('traverser')" style="display:none">OBJEKT</button>
+      <button class="tab admin-bara" data-sida="anvandare" onclick="visaSida('anvandare')" style="display:none">ANV</button>
+      <button class="tab" data-sida="konto" onclick="visaSida('konto')">KONTO</button>
+    </div>
+  </header>
+
+  <div class="wrap">
+
+    <!-- ── Objektlista / ny kontroll ── -->
+    <div class="sida active" id="sida-objekt">
+      <div id="objekt-lista-vy">
+        <div class="falt sokfalt">
+          <input type="text" id="sok-travers" placeholder="Sök individ nr, placering eller typ…" oninput="ritaTraverser()">
+        </div>
+        <div id="traverslista"><div class="laddar">Hämtar objekt…</div></div>
+      </div>
+
+      <div id="kontroll-vy" style="display:none">
+        <button class="tillbaka" onclick="avbrytKontroll()">← Tillbaka till objektlistan</button>
+        <div class="kort" id="kontroll-huvud"></div>
+        <div id="kontroll-varning"></div>
+        <div id="checklista"></div>
+
+        <div class="avsnitt">Övrig kommentar</div>
+        <div class="falt">
+          <textarea id="kontroll-kommentar" placeholder="Frivilligt – noteringar som inte hör till en enskild punkt."></textarea>
+        </div>
+
+        <div id="anm-paminnelse"></div>
+        <button class="btn" id="spara-knapp" onclick="sparaKontroll()">Signera och spara</button>
+      </div>
+    </div>
+
+    <!-- ── Historik ── -->
+    <div class="sida" id="sida-historik">
+      <div class="falt sokfalt">
+        <select id="hist-filter" onchange="ritaHistorik()">
+          <option value="alla">Alla kontroller</option>
+          <option value="anm">Endast med anmärkning</option>
+          <option value="min">Endast mina</option>
+        </select>
+      </div>
+      <div id="historiklista"><div class="laddar">Hämtar kontroller…</div></div>
+    </div>
+
+    <!-- ── Statistik ── -->
+    <div class="sida" id="sida-stats">
+      <div id="statsinnehall"><div class="laddar">Räknar…</div></div>
+      <div class="avsnitt">Export</div>
+      <div class="rad-2">
+        <button class="btn sekundar" onclick="exportera('csv')">Exportera CSV</button>
+        <button class="btn sekundar" onclick="exportera('json')">Exportera JSON</button>
+      </div>
+    </div>
+
+    <!-- ── Traverser (admin) ── -->
+    <div class="sida" id="sida-traverser">
+      <div class="avsnitt">Lägg till objekt</div>
+      <div class="rad-2">
+        <div class="falt"><label>Individ nr</label><input type="text" id="ny-individnr" placeholder="T.ex. 405"></div>
+        <div class="falt"><label>Avdelning</label><input type="text" id="ny-avdelning" placeholder="Prod / UH"></div>
+      </div>
+      <div class="falt"><label>Placering</label><input type="text" id="ny-placering" placeholder="T.ex. SW2 Högdel"></div>
+      <div class="falt"><label>Typ / modell</label><input type="text" id="ny-typ" placeholder="T.ex. Kone travers 3200 kg"></div>
+      <div class="falt">
+        <label><input type="checkbox" id="ny-extra" style="width:auto;margin-right:7px;vertical-align:-2px">
+        Kräver extra kontroll före användning</label>
+      </div>
+      <button class="btn" onclick="laggTillTravers()">Lägg till objekt</button>
+
+      <div class="avsnitt">Objekt i registret <span id="antal-traverser" class="mono" style="color:var(--muted)"></span></div>
+      <div id="traverser-admin"></div>
+    </div>
+
+    <!-- ── Användare (admin) ── -->
+    <div class="sida" id="sida-anvandare">
+      <div class="avsnitt">Lägg till användare</div>
+      <div class="falt"><label>Namn</label><input type="text" id="anv-namn" placeholder="För- och efternamn"></div>
+      <div class="rad-2">
+        <div class="falt"><label>PIN-kod (4–8 siffror)</label><input type="text" id="anv-pin" inputmode="numeric" placeholder="T.ex. 4821"></div>
+        <div class="falt"><label>Roll</label>
+          <select id="anv-roll"><option value="personal">Personal</option><option value="admin">Admin</option></select>
+        </div>
+      </div>
+      <button class="btn" onclick="laggTillAnvandare()">Lägg till användare</button>
+
+      <div class="avsnitt">Användare</div>
+      <div id="anvandarlista"></div>
+    </div>
+
+    <!-- ── Konto ── -->
+    <div class="sida" id="sida-konto">
+      <div class="avsnitt">Byt PIN-kod</div>
+      <div class="falt"><label>Nuvarande PIN</label><input type="password" id="pin-gammal" inputmode="numeric"></div>
+      <div class="falt"><label>Ny PIN (4–8 siffror)</label><input type="password" id="pin-ny" inputmode="numeric"></div>
+      <button class="btn" onclick="bytPin()">Spara ny PIN</button>
+
+      <div class="avsnitt">Om appen</div>
+      <div class="info">
+        Daglig tillsyn av traverser och telfrar enligt AFS 2023:11 29 §. Tillsynen utförs
+        i samband med användning, i enlighet med tillverkarens instruktioner. Brister
+        eller skador rapporteras till arbetsledningen före fortsatt användning, och
+        arbetsorder skrivs till UH-avdelningen.
+        <br><br>
+        Dokument FRM-08075, version 2 · Plant Norrköping · Ansvarig: Fredrik Andersson
+      </div>
+      <button class="btn sekundar" onclick="laddaOm()">Uppdatera data från servern</button>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   KONFIGURATION – klistra in din Apps Script-URL här
+   ══════════════════════════════════════════════════════════════ */
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyVzmaa2oCMpFrAK3DuFR6hsGBYB-N7TDmUUHe37xob8Sx8HM9paYytaryshnAMtlvQYw/exec';
+
+/* ══ Tillstånd ══ */
+let anvandare   = null;
+let traverser   = [];
+let checklista  = [];
+let senaste     = {};
+let kontroller  = [];
+let aktivTravers = null;
+let svar        = {};   // punktId -> { varde: 0|1|2, kommentar }
+const KO_NYCKEL = 'travers_ko_v1';
+
+/* ══ Generella råd (från FRM-08075 sida 3) ══ */
+const RAD = {
+  '1.1': 'Kontrollera linan varje dag – den är en slitagedel som lätt skadas. Kontrollera att linan ej har s.k. kinkbildning eller klämskada. Trådbrott bör ej förekomma. Synliga trådbrott är oftast en indikering på ett större antal osynliga brott.',
+  '1.2': 'Kontrollera från golvnivå att synlig del av linan ligger korrekt i linhjulens spår, såväl vid lyftmaskineri som krokblock. Vid sneddrag eller slaklina kan linan hoppa av linhjulen och därmed skadas. Var därför uppmärksam på förändrade linvinklar.',
+  '2.1': 'Kroken med dess krokhuvud skall med lätthet kunna vaggas i dess infästning samt kunna roteras. Tröghet i lagringar kan medföra krokbrott.',
+  '2.2': 'Krokspärren förhindrar oavsiktlig urkrokning i samband med slaklina eller lastsättningar. Fungerande krokspärr skall finnas enligt föreskrifter AFS 2006:6.',
+  '3.1': 'Kör försiktigt upp och kontrollera att lyftrörelsen stoppas vid normal övre nivå. Ett ej fungerande övre gränsläge kan leda till att krokblocket körs upp i lyftmaskineriet, vilket medför omfattande skador och är en stor säkerhetsrisk.',
+  '3.2': 'Kör försiktigt ned och kontrollera att lyftrörelsen stoppas vid normal nedre nivå. Ett ej fungerande nedre gränsläge kan leda till att linan lindas upp baklänges på lintrumman.',
+  '4.1': 'Vid synliga skador finns risk för andra skador – detta kan bero på att fukt och smuts kommer innanför höljet och kan skapa farliga driftstörningar.',
+  '4.2': 'Trasiga knappar kan fastna i aktivt läge, vilket kan medföra farliga driftsituationer.',
+  '4.3': 'Vid fel på funktion och hastighet kan detta bero på allvarliga fel i styrsystemet.',
+  '5.1': 'Lyssna efter avvikande ljud vid start och stopp.',
+  '5.2': 'Förändringar kan bero på att bromsbeläggen är utslitna eller så lättar ej bromsen trots att körning pågår. Testa ej broms genom att stoppa pågående lyftrörelse med nödstopp. Nödstopp skall endast användas i nödsituationer samt efter avslutat arbete.',
+  '6.1': 'Kontrollera att knappen rent mekaniskt fungerar korrekt och förblir aktiverad och att återställningsfunktion fungerar.',
+  '6.2': 'Prova manöverknapparna för samtliga rörelser. Nödstoppknapp skall enligt föreskrifter stoppa driften på ett annat sätt än ordinarie. Ifall en rörelse hänger sig är det således viktigt att nödstoppet är testat och fungerar.'
+};
+
+/* ══ Hjälpare ══ */
+function $(id) { return document.getElementById(id); }
+
+function esc(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
+function toast(text, typ) {
+  const t = $('toast');
+  t.textContent = text;
+  t.className = 'visa' + (typ ? ' ' + typ : '');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(function () { t.className = ''; }, 3200);
+}
+
+function idag() { return new Date().toISOString().slice(0, 10); }
+
+function datumText(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d)) return String(iso).slice(0, 16).replace('T', ' ');
+  return d.toLocaleString('sv-SE', {
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit'
+  });
+}
+
+function dagarSedan(iso) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (isNaN(d)) return null;
+  return Math.floor((Date.now() - d.getTime()) / 86400000);
+}
+
+/* ══ Nätverk ══ */
+async function apiGet(params) {
+  const url = APPS_SCRIPT_URL + '?' + new URLSearchParams(params).toString();
+  const r = await fetch(url);
+  if (!r.ok) throw new Error('Servern svarade ' + r.status);
+  return r.json();
+}
+
+/* Apps Script kräver text/plain för att undvika CORS-preflight. */
+async function apiPost(payload) {
+  const r = await fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  });
+  if (!r.ok) throw new Error('Servern svarade ' + r.status);
+  return r.json();
+}
+
+function uppdateraNatstatus() {
+  const ko = hamtaKo();
+  const el = $('natstatus');
+  if (!navigator.onLine) {
+    el.textContent = 'Offline'; el.className = 'natstatus offline';
+  } else if (ko.length) {
+    el.textContent = ko.length + ' i kö'; el.className = 'natstatus kö';
+  } else {
+    el.textContent = 'Online'; el.className = 'natstatus';
+  }
+}
+
+/* ══ Offline-kö ══ */
+function hamtaKo() {
+  try { return JSON.parse(localStorage.getItem(KO_NYCKEL) || '[]'); }
+  catch (e) { return []; }
+}
+function sparaKo(ko) {
+  try { localStorage.setItem(KO_NYCKEL, JSON.stringify(ko)); } catch (e) {}
+  uppdateraNatstatus();
+}
+function laggIKo(payload) {
+  const ko = hamtaKo(); ko.push(payload); sparaKo(ko);
+}
+async function tommKo() {
+  let ko = hamtaKo();
+  if (!ko.length || !navigator.onLine) return;
+  const kvar = [];
+  for (const p of ko) {
+    try {
+      const svar = await apiPost(p);
+      if (!svar.ok) kvar.push(p);
+    } catch (e) { kvar.push(p); }
+  }
+  sparaKo(kvar);
+  if (kvar.length < ko.length) {
+    toast((ko.length - kvar.length) + ' köade kontroller skickades', 'ok');
+    await laddaData();
+  }
+}
+
+/* ══ Inloggning ══ */
+async function loggaIn() {
+  const namn = $('login-namn').value.trim();
+  const pin  = $('login-pin').value.trim();
+  const fel  = $('login-fel');
+  const knapp = $('login-knapp');
+
+  if (!namn || !pin) { fel.textContent = 'Fyll i både namn och PIN.'; fel.style.display = 'block'; return; }
+  if (APPS_SCRIPT_URL.indexOf('KLISTRA_IN') === 0) {
+    fel.textContent = 'Apps Script-URL saknas i index.html.'; fel.style.display = 'block'; return;
+  }
+
+  fel.style.display = 'none';
+  knapp.disabled = true; knapp.textContent = 'Loggar in…';
+
+  try {
+    const svar = await apiPost({ action: 'login', namn: namn, pin: pin });
+    if (!svar.ok) {
+      fel.textContent = svar.fel || 'Inloggningen misslyckades.';
+      fel.style.display = 'block';
+      return;
+    }
+    anvandare = svar.anvandare;
+    sessionStorage.setItem('travers_anv', JSON.stringify(anvandare));
+    startaApp();
+  } catch (e) {
+    fel.textContent = 'Kunde inte nå servern. Kontrollera nätverket.';
+    fel.style.display = 'block';
+  } finally {
+    knapp.disabled = false; knapp.textContent = 'Logga in';
+  }
+}
+
+function loggaUt() {
+  if (hamtaKo().length && !confirm('Det finns kontroller som inte skickats. Logga ut ändå?')) return;
+  sessionStorage.removeItem('travers_anv');
+  anvandare = null;
+  $('app-vy').style.display = 'none';
+  $('login-vy').style.display = 'grid';
+  $('login-pin').value = '';
+}
+
+function startaApp() {
+  $('login-vy').style.display = 'none';
+  $('app-vy').style.display = 'block';
+  $('user-etikett').textContent = anvandare.namn +
+    (anvandare.roll === 'admin' ? ' · Admin' : '');
+
+  const adminFlikar = document.querySelectorAll('.admin-bara');
+  adminFlikar.forEach(function (t) {
+    t.style.display = anvandare.roll === 'admin' ? '' : 'none';
+  });
+
+  laddaData();
+  tommKo();
+}
+
+/* ══ Datahämtning ══ */
+async function laddaData() {
+  try {
+    const b = await apiGet({ action: 'bootstrap' });
+    if (!b.ok) throw new Error(b.fel);
+    traverser  = b.traverser || [];
+    checklista = b.checklista || [];
+    senaste    = b.senaste || {};
+    ritaTraverser();
+    ritaTraverserAdmin();
+
+    const k = await apiGet(
+      anvandare.roll === 'admin'
+        ? { action: 'kontroller', admin: anvandare.id }
+        : { action: 'kontroller' }
+    );
+    if (k.ok) { kontroller = k.kontroller || []; ritaHistorik(); ritaStats(); }
+
+    if (anvandare.roll === 'admin') laddaAnvandare();
+  } catch (e) {
+    toast('Kunde inte hämta data: ' + e.message, 'fel');
+    $('traverslista').innerHTML = '<div class="tom">Kunde inte hämta objektlistan.<br>Kontrollera nätverket och försök igen.</div>';
+  }
+}
+
+function laddaOm() { toast('Uppdaterar…'); laddaData(); }
+
+/* ══ Navigering ══ */
+function visaSida(namn) {
+  document.querySelectorAll('.sida').forEach(function (s) { s.classList.remove('active'); });
+  document.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('active'); });
+  $('sida-' + namn).classList.add('active');
+  document.querySelector('.tab[data-sida="' + namn + '"]').classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+/* ══ Objektlista ══ */
+function statusFor(traversId) {
+  const s = senaste[traversId];
+  if (!s) return { klass: 'grå', text: 'Aldrig kontrollerad', kort: 'grå' };
+
+  const dagar = dagarSedan(s.tidpunkt);
+  const anm = Number(s.antalAnmarkningar || 0);
+  const namn = s.anvandareNamn || 'okänd';
+  const nar = datumText(s.tidpunkt);
+
+  if (anm > 0) {
+    return {
+      klass: 'rod',
+      text: anm + ' öppen' + (anm === 1 ? ' anmärkning' : 'na anmärkningar') +
+            ' · ' + nar + ' · ' + namn
+    };
+  }
+  if (dagar === 0) return { klass: 'gron', text: 'Kontrollerad idag · ' + namn };
+  if (dagar !== null && dagar <= 7) {
+    return { klass: 'gron', text: 'Kontrollerad ' + nar + ' · ' + namn };
+  }
+  return { klass: 'gul', text: 'Senast ' + nar + ' · ' + namn };
+}
+
+function ritaTraverser() {
+  const sok = ($('sok-travers').value || '').toLowerCase().trim();
+  const lista = traverser.filter(function (t) {
+    if (!sok) return true;
+    return (t.individnr + ' ' + t.placering + ' ' + t.typ + ' ' + t.avdelning)
+      .toLowerCase().indexOf(sok) !== -1;
+  });
+
+  if (!lista.length) {
+    $('traverslista').innerHTML = '<div class="tom">Inga objekt matchar sökningen.</div>';
+    return;
+  }
+
+  $('traverslista').innerHTML = lista.map(function (t) {
+    const s = statusFor(t.id);
+    return '<button class="travers-rad ' + s.klass + '" onclick="oppnaKontroll(\'' + t.id + '\')">' +
+      '<div class="travers-nr">' + esc(t.individnr || '–') + '</div>' +
+      '<div class="travers-info">' +
+        '<div class="travers-plats">' + esc(t.placering) +
+          (t.extrakontroll ? '<span class="flagga">Extra kontroll</span>' : '') + '</div>' +
+        '<div class="travers-typ">' + esc(t.typ || '') + '</div>' +
+        '<div class="travers-status s-' + s.klass + '">' + esc(s.text) + '</div>' +
+      '</div></button>';
+  }).join('');
+}
+
+/* ══ Kontrollformulär ══ */
+function oppnaKontroll(traversId) {
+  aktivTravers = traverser.filter(function (t) { return t.id === traversId; })[0];
+  if (!aktivTravers) return;
+  svar = {};
+
+  $('objekt-lista-vy').style.display = 'none';
+  $('kontroll-vy').style.display = 'block';
+
+  $('kontroll-huvud').innerHTML =
+    '<div style="display:flex;gap:11px;align-items:center">' +
+      '<div class="travers-nr">' + esc(aktivTravers.individnr || '–') + '</div>' +
+      '<div><div class="travers-plats">' + esc(aktivTravers.placering) + '</div>' +
+      '<div class="travers-typ">' + esc(aktivTravers.typ) + ' · ' + esc(aktivTravers.avdelning) + '</div></div>' +
+    '</div>';
+
+  const s = senaste[aktivTravers.id];
+  let varning = '';
+  if (aktivTravers.extrakontroll) {
+    varning += '<div class="varning"><strong>Extra kontroll före användning.</strong> ' +
+      'Detta objekt kräver utökad kontroll innan det tas i bruk.</div>';
+  }
+  if (s && Number(s.antalAnmarkningar) > 0) {
+    varning += '<div class="varning"><strong>Öppen anmärkning sedan ' + esc(datumText(s.tidpunkt)) + '.</strong> ' +
+      'Kontrollera att arbetsorder är skriven till UH-avdelningen och att bristen är åtgärdad ' +
+      'innan objektet används vidare.</div>';
+  }
+  $('kontroll-varning').innerHTML = varning;
+
+  ritaChecklista();
+  $('kontroll-kommentar').value = '';
+  $('anm-paminnelse').innerHTML = '';
+  window.scrollTo(0, 0);
+}
+
+function avbrytKontroll() {
+  const nagotIfyllt = Object.keys(svar).length > 0;
+  if (nagotIfyllt && !confirm('Kontrollen är inte sparad. Vill du lämna den?')) return;
+  aktivTravers = null; svar = {};
+  $('kontroll-vy').style.display = 'none';
+  $('objekt-lista-vy').style.display = 'block';
+}
+
+function ritaChecklista() {
+  const grupper = {};
+  checklista.forEach(function (c) {
+    if (!grupper[c.grupp]) grupper[c.grupp] = { namn: c.gruppnamn, punkter: [] };
+    grupper[c.grupp].punkter.push(c);
+  });
+
+  let html = '';
+  Object.keys(grupper).sort().forEach(function (g) {
+    html += '<div class="grupp-rubrik"><span class="grupp-nr">' + esc(g) + '</span>' +
+            esc(grupper[g].namn) + '</div>';
+
+    grupper[g].punkter.forEach(function (p) {
+      const v = svar[p.id];
+      const rad = RAD[p.punkt];
+      html +=
+        '<div class="punkt' + (v && v.varde === 1 ? ' anmarkt' : '') + '" id="punkt-' + esc(p.id) + '">' +
+          '<div class="punkt-topp">' +
+            '<div class="punkt-nr mono">' + esc(p.punkt) + '</div>' +
+            '<div class="punkt-text">' + esc(p.text) + '</div>' +
+          '</div>' +
+          '<div class="val">' +
+            '<button class="' + (v && v.varde === 0 ? 'vald-ok' : '') + '" onclick="valj(\'' + p.id + '\',0)">Utan anmärkning</button>' +
+            '<button class="' + (v && v.varde === 1 ? 'vald-anm' : '') + '" onclick="valj(\'' + p.id + '\',1)">Anmärkning</button>' +
+            '<button class="' + (v && v.varde === 2 ? 'vald-ea' : '') + '" onclick="valj(\'' + p.id + '\',2)">Ej aktuell</button>' +
+          '</div>' +
+          (rad ? '<button class="rad-hjalp" onclick="visaRad(\'' + esc(p.id) + '\')">Generella råd ▾</button>' +
+                 '<div class="hjalptext" id="rad-' + esc(p.id) + '">' + esc(rad) + '</div>' : '') +
+          (v && v.varde === 1
+            ? '<div class="anm-falt"><textarea placeholder="Beskriv bristen – underlag för arbetsordern." ' +
+              'oninput="anmKommentar(\'' + p.id + '\', this.value)">' + esc(v.kommentar || '') + '</textarea></div>'
+            : '') +
+        '</div>';
+    });
+  });
+
+  $('checklista').innerHTML = html;
+}
+
+function visaRad(punktId) {
+  const el = $('rad-' + punktId);
+  if (el) el.classList.toggle('oppen');
+}
+
+function valj(punktId, varde) {
+  const tidigare = svar[punktId] || {};
+  svar[punktId] = { varde: varde, kommentar: varde === 1 ? (tidigare.kommentar || '') : '' };
+  ritaChecklista();
+  uppdateraPaminnelse();
+  const el = $('punkt-' + punktId);
+  if (el) el.scrollIntoView({ block: 'nearest' });
+}
+
+function anmKommentar(punktId, text) {
+  if (svar[punktId]) svar[punktId].kommentar = text;
+}
+
+function uppdateraPaminnelse() {
+  const anm = Object.keys(svar).filter(function (k) { return svar[k].varde === 1; });
+  $('anm-paminnelse').innerHTML = anm.length
+    ? '<div class="varning"><strong>' + anm.length + ' anmärkning' +
+      (anm.length === 1 ? '' : 'ar') + ' registrerad' + (anm.length === 1 ? '' : 'e') + '.</strong> ' +
+      'Rapportera till arbetsledningen före fortsatt användning och skriv arbetsorder till UH-avdelningen.</div>'
+    : '';
+}
+
+async function sparaKontroll() {
+  const obesvarade = checklista.filter(function (c) { return !svar[c.id]; });
+  if (obesvarade.length) {
+    toast(obesvarade.length + ' punkt' + (obesvarade.length === 1 ? '' : 'er') + ' saknar svar', 'fel');
+    const el = $('punkt-' + obesvarade[0].id);
+    if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    return;
+  }
+
+  const saknarText = checklista.filter(function (c) {
+    return svar[c.id] && svar[c.id].varde === 1 && !String(svar[c.id].kommentar).trim();
+  });
+  if (saknarText.length) {
+    toast('Beskriv bristen för punkt ' + saknarText[0].punkt, 'fel');
+    const el = $('punkt-' + saknarText[0].id);
+    if (el) el.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    return;
+  }
+
+  const resultat = checklista.map(function (c) {
+    return {
+      punkt: c.punkt,
+      text: c.text,
+      varde: svar[c.id].varde,
+      kommentar: svar[c.id].kommentar || ''
+    };
+  });
+
+  const payload = {
+    action: 'sparaKontroll',
+    tidpunkt: new Date().toISOString(),
+    traversId: aktivTravers.id,
+    individnr: aktivTravers.individnr,
+    placering: aktivTravers.placering,
+    anvandareId: anvandare.id,
+    anvandareNamn: anvandare.namn,
+    resultat: resultat,
+    kommentar: $('kontroll-kommentar').value.trim()
+  };
+
+  const knapp = $('spara-knapp');
+  knapp.disabled = true; knapp.textContent = 'Sparar…';
+
+  try {
+    const r = await apiPost(payload);
+    if (!r.ok) throw new Error(r.fel || 'Okänt fel');
+    toast(r.status === 'Anmärkning'
+      ? 'Sparad med ' + r.antalAnmarkningar + ' anmärkning' + (r.antalAnmarkningar === 1 ? '' : 'ar')
+      : 'Kontrollen är sparad', 'ok');
+    aktivTravers = null; svar = {};
+    $('kontroll-vy').style.display = 'none';
+    $('objekt-lista-vy').style.display = 'block';
+    await laddaData();
+  } catch (e) {
+    laggIKo(payload);
+    toast('Ingen kontakt med servern – kontrollen är köad och skickas automatiskt', 'fel');
+    aktivTravers = null; svar = {};
+    $('kontroll-vy').style.display = 'none';
+    $('objekt-lista-vy').style.display = 'block';
+  } finally {
+    knapp.disabled = false; knapp.textContent = 'Signera och spara';
+  }
+}
+
+/* ══ Historik ══ */
+function ritaHistorik() {
+  const filter = $('hist-filter').value;
+  let lista = kontroller.slice();
+  if (filter === 'anm') lista = lista.filter(function (k) { return k.antalAnmarkningar > 0; });
+  if (filter === 'min') lista = lista.filter(function (k) { return k.anvandareNamn === anvandare.namn; });
+
+  const badge = $('hist-badge');
+  const antalAnm = kontroller.filter(function (k) { return k.antalAnmarkningar > 0; }).length;
+  badge.textContent = kontroller.length;
+  badge.className = 'badge' + (antalAnm ? ' varning' : '');
+
+  if (!lista.length) {
+    $('historiklista').innerHTML = '<div class="tom">Inga kontroller att visa.</div>';
+    return;
+  }
+
+  $('historiklista').innerHTML = lista.map(function (k) {
+    const anmarkningar = (k.resultat || []).filter(function (r) { return r.varde === 1; });
+    return '<div class="hist-rad' + (k.antalAnmarkningar > 0 ? ' anm' : '') + '">' +
+      '<div class="hist-topp">' +
+        '<div class="travers-plats">' + esc(k.individnr || '–') + ' · ' + esc(k.placering) + '</div>' +
+        '<div class="hist-tid">' + esc(datumText(k.tidpunkt)) + '</div>' +
+      '</div>' +
+      '<div class="hist-meta">' + esc(k.anvandareNamn) + ' · ' + esc(k.status) + '</div>' +
+      (anmarkningar.length
+        ? '<div class="hist-anm">' + anmarkningar.map(function (a) {
+            return '<div class="hist-anm-rad"><strong>' + esc(a.punkt) + '</strong> ' + esc(a.kommentar) + '</div>';
+          }).join('') + '</div>'
+        : '') +
+      (k.kommentar ? '<div class="hist-anm">' + esc(k.kommentar) + '</div>' : '') +
+      (anvandare.roll === 'admin'
+        ? '<button class="btn sekundar liten" style="margin-top:9px" onclick="raderaKontroll(\'' + k.id + '\')">Radera</button>'
+        : '') +
+      '</div>';
+  }).join('');
+}
+
+async function raderaKontroll(id) {
+  if (!confirm('Radera kontrollen permanent?')) return;
+  try {
+    const r = await apiPost({ action: 'raderaKontroll', adminId: anvandare.id, id: id });
+    if (!r.ok) throw new Error(r.fel);
+    toast('Kontrollen är raderad', 'ok');
+    await laddaData();
+  } catch (e) { toast('Kunde inte radera: ' + e.message, 'fel'); }
+}
+
+/* ══ Statistik ══ */
+function ritaStats() {
+  const totalt = kontroller.length;
+  const medAnm = kontroller.filter(function (k) { return k.antalAnmarkningar > 0; }).length;
+  const kontrolleradeIdag = Object.keys(senaste).filter(function (id) {
+    return String(senaste[id].tidpunkt).slice(0, 10) === idag();
+  }).length;
+  const oppna = Object.keys(senaste).filter(function (id) {
+    return Number(senaste[id].antalAnmarkningar) > 0;
+  }).length;
+
+  const perPunkt = {};
+  kontroller.forEach(function (k) {
+    (k.resultat || []).forEach(function (r) {
+      if (r.varde === 1) perPunkt[r.punkt] = (perPunkt[r.punkt] || 0) + 1;
+    });
+  });
+  const punktLista = Object.keys(perPunkt)
+    .map(function (p) { return { punkt: p, antal: perPunkt[p] }; })
+    .sort(function (a, b) { return b.antal - a.antal; }).slice(0, 8);
+  const max = punktLista.length ? punktLista[0].antal : 1;
+
+  const perPerson = {};
+  kontroller.forEach(function (k) {
+    perPerson[k.anvandareNamn] = (perPerson[k.anvandareNamn] || 0) + 1;
+  });
+  const personLista = Object.keys(perPerson)
+    .map(function (n) { return { namn: n, antal: perPerson[n] }; })
+    .sort(function (a, b) { return b.antal - a.antal; });
+  const maxP = personLista.length ? personLista[0].antal : 1;
+
+  $('statsinnehall').innerHTML =
+    '<div class="stat-rutnat">' +
+      '<div class="stat-ruta"><div class="stat-varde">' + totalt + '</div><div class="stat-etikett">Kontroller totalt</div></div>' +
+      '<div class="stat-ruta"><div class="stat-varde" style="color:var(--red)">' + oppna + '</div><div class="stat-etikett">Objekt med öppen anmärkning</div></div>' +
+      '<div class="stat-ruta"><div class="stat-varde" style="color:var(--green)">' + kontrolleradeIdag + '</div><div class="stat-etikett">Kontrollerade idag</div></div>' +
+      '<div class="stat-ruta"><div class="stat-varde">' + medAnm + '</div><div class="stat-etikett">Kontroller med anmärkning</div></div>' +
+    '</div>' +
+    '<div class="avsnitt">Vanligaste anmärkningarna</div>' +
+    (punktLista.length
+      ? punktLista.map(function (p) {
+          const c = checklista.filter(function (x) { return x.punkt === p.punkt; })[0];
+          return '<div class="stapel-rad"><div class="stapel-topp">' +
+            '<span><strong class="mono">' + esc(p.punkt) + '</strong> ' + esc(c ? c.text : '') + '</span>' +
+            '<span class="mono">' + p.antal + '</span></div>' +
+            '<div class="stapel-bg"><div class="stapel-fyll" style="width:' + (p.antal / max * 100) + '%;background:var(--red)"></div></div></div>';
+        }).join('')
+      : '<div class="tom">Inga anmärkningar registrerade.</div>') +
+    '<div class="avsnitt">Kontroller per person</div>' +
+    (personLista.length
+      ? personLista.map(function (p) {
+          return '<div class="stapel-rad"><div class="stapel-topp">' +
+            '<span>' + esc(p.namn) + '</span><span class="mono">' + p.antal + '</span></div>' +
+            '<div class="stapel-bg"><div class="stapel-fyll" style="width:' + (p.antal / maxP * 100) + '%"></div></div></div>';
+        }).join('')
+      : '<div class="tom">Inga kontroller ännu.</div>');
+}
+
+/* ══ Export ══ */
+function laddaNer(innehall, filnamn, typ) {
+  const blob = new Blob([innehall], { type: typ });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filnamn;
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+function exportera(format) {
+  if (!kontroller.length) { toast('Inget att exportera', 'fel'); return; }
+  const stamp = idag();
+
+  if (format === 'json') {
+    laddaNer(JSON.stringify(kontroller, null, 2),
+      'tillsyn-traverser-' + stamp + '.json', 'application/json');
+    toast('JSON exporterad', 'ok');
+    return;
+  }
+
+  const rader = [['Tidpunkt', 'Individ nr', 'Placering', 'Kranförare', 'Status',
+                  'Antal anmärkningar', 'Anmärkningar', 'Kommentar']];
+  kontroller.forEach(function (k) {
+    const anm = (k.resultat || []).filter(function (r) { return r.varde === 1; })
+      .map(function (r) { return r.punkt + ': ' + r.kommentar; }).join(' | ');
+    rader.push([datumText(k.tidpunkt), k.individnr, k.placering, k.anvandareNamn,
+                k.status, k.antalAnmarkningar, anm, k.kommentar]);
+  });
+
+  const csv = '\uFEFF' + rader.map(function (r) {
+    return r.map(function (c) {
+      return '"' + String(c == null ? '' : c).replace(/"/g, '""') + '"';
+    }).join(';');
+  }).join('\r\n');
+
+  laddaNer(csv, 'tillsyn-traverser-' + stamp + '.csv', 'text/csv;charset=utf-8');
+  toast('CSV exporterad', 'ok');
+}
+
+/* ══ Admin: traverser ══ */
+function ritaTraverserAdmin() {
+  if (!anvandare || anvandare.roll !== 'admin') return;
+  $('antal-traverser').textContent = '(' + traverser.length + ')';
+  $('traverser-admin').innerHTML = traverser.map(function (t) {
+    return '<div class="lista-rad">' +
+      '<div class="travers-nr">' + esc(t.individnr || '–') + '</div>' +
+      '<div class="lista-info">' +
+        '<div class="lista-namn">' + esc(t.placering) +
+          (t.extrakontroll ? '<span class="flagga">Extra</span>' : '') + '</div>' +
+        '<div class="lista-meta">' + esc(t.typ) + ' · ' + esc(t.avdelning) + '</div>' +
+      '</div>' +
+      '<button class="radera-knapp" onclick="raderaTravers(\'' + t.id + '\',\'' +
+        esc(t.placering).replace(/'/g, "\\'") + '\')">Radera</button>' +
+      '</div>';
+  }).join('');
+}
+
+async function laggTillTravers() {
+  const placering = $('ny-placering').value.trim();
+  if (!placering) { toast('Placering krävs', 'fel'); return; }
+  try {
+    const r = await apiPost({
+      action: 'laggTillTravers', adminId: anvandare.id,
+      individnr: $('ny-individnr').value.trim(),
+      avdelning: $('ny-avdelning').value.trim(),
+      placering: placering,
+      typ: $('ny-typ').value.trim(),
+      extrakontroll: $('ny-extra').checked
+    });
+    if (!r.ok) throw new Error(r.fel);
+    ['ny-individnr', 'ny-avdelning', 'ny-placering', 'ny-typ'].forEach(function (id) { $(id).value = ''; });
+    $('ny-extra').checked = false;
+    toast('Objektet är tillagt', 'ok');
+    await laddaData();
+  } catch (e) { toast('Kunde inte lägga till: ' + e.message, 'fel'); }
+}
+
+async function raderaTravers(id, namn) {
+  if (!confirm('Radera ' + namn + ' ur registret?\n\nTidigare kontroller ligger kvar i loggen.')) return;
+  try {
+    const r = await apiPost({ action: 'raderaTravers', adminId: anvandare.id, id: id });
+    if (!r.ok) throw new Error(r.fel);
+    toast('Objektet är raderat', 'ok');
+    await laddaData();
+  } catch (e) { toast('Kunde inte radera: ' + e.message, 'fel'); }
+}
+
+/* ══ Admin: användare ══ */
+async function laddaAnvandare() {
+  try {
+    const r = await apiGet({ action: 'anvandare', admin: anvandare.id });
+    if (!r.ok) throw new Error(r.fel);
+    $('anvandarlista').innerHTML = (r.anvandare || []).map(function (u) {
+      return '<div class="lista-rad">' +
+        '<div class="lista-info">' +
+          '<div class="lista-namn">' + esc(u.namn) + '</div>' +
+          '<div class="lista-meta">' + esc(datumText(u.skapad)) + '</div>' +
+        '</div>' +
+        '<span class="roll-tagg roll-' + esc(u.roll) + '">' + esc(u.roll) + '</span>' +
+        (u.id === anvandare.id ? ''
+          : '<button class="radera-knapp" onclick="raderaAnvandare(\'' + u.id + '\',\'' +
+            esc(u.namn).replace(/'/g, "\\'") + '\')">Radera</button>') +
+        '</div>';
+    }).join('');
+  } catch (e) {
+    $('anvandarlista').innerHTML = '<div class="tom">Kunde inte hämta användarlistan.</div>';
+  }
+}
+
+async function laggTillAnvandare() {
+  const namn = $('anv-namn').value.trim();
+  const pin  = $('anv-pin').value.trim();
+  if (!namn || !pin) { toast('Fyll i namn och PIN', 'fel'); return; }
+  if (!/^\d{4,8}$/.test(pin)) { toast('PIN ska vara 4–8 siffror', 'fel'); return; }
+
+  try {
+    const r = await apiPost({
+      action: 'laggTillAnvandare', adminId: anvandare.id,
+      namn: namn, pin: pin, roll: $('anv-roll').value
+    });
+    if (!r.ok) throw new Error(r.fel);
+    $('anv-namn').value = ''; $('anv-pin').value = '';
+    toast('Användaren är tillagd', 'ok');
+    laddaAnvandare();
+  } catch (e) { toast('Kunde inte lägga till: ' + e.message, 'fel'); }
+}
+
+async function raderaAnvandare(id, namn) {
+  if (!confirm('Ta bort ' + namn + '?')) return;
+  try {
+    const r = await apiPost({ action: 'raderaAnvandare', adminId: anvandare.id, id: id });
+    if (!r.ok) throw new Error(r.fel);
+    toast('Användaren är borttagen', 'ok');
+    laddaAnvandare();
+  } catch (e) { toast('Kunde inte ta bort: ' + e.message, 'fel'); }
+}
+
+/* ══ Konto ══ */
+async function bytPin() {
+  const gammal = $('pin-gammal').value.trim();
+  const ny = $('pin-ny').value.trim();
+  if (!/^\d{4,8}$/.test(ny)) { toast('Ny PIN ska vara 4–8 siffror', 'fel'); return; }
+  try {
+    const r = await apiPost({
+      action: 'bytPin', anvandareId: anvandare.id, gammalPin: gammal, nyPin: ny
+    });
+    if (!r.ok) throw new Error(r.fel);
+    $('pin-gammal').value = ''; $('pin-ny').value = '';
+    toast('PIN-koden är bytt', 'ok');
+  } catch (e) { toast(e.message, 'fel'); }
+}
+
+/* ══ Tema ══ */
+const TEMAN = ['morkt', 'klassiskt', 'ljust'];
+function bytTema() {
+  const nu = document.documentElement.getAttribute('data-tema') || 'morkt';
+  const nasta = TEMAN[(TEMAN.indexOf(nu) + 1) % TEMAN.length];
+  document.documentElement.setAttribute('data-tema', nasta);
+  try { localStorage.setItem('travers_tema', nasta); } catch (e) {}
+}
+
+/* ══ Start ══ */
+(function init() {
+  try {
+    const tema = localStorage.getItem('travers_tema');
+    if (tema) document.documentElement.setAttribute('data-tema', tema);
+  } catch (e) {}
+
+  $('login-pin').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') loggaIn();
+  });
+  $('login-namn').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') $('login-pin').focus();
+  });
+
+  window.addEventListener('online', function () { uppdateraNatstatus(); tommKo(); });
+  window.addEventListener('offline', uppdateraNatstatus);
+  setInterval(tommKo, 60000);
+  uppdateraNatstatus();
+
+  try {
+    const sparad = sessionStorage.getItem('travers_anv');
+    if (sparad) { anvandare = JSON.parse(sparad); startaApp(); }
+  } catch (e) {}
+})();
+</script>
+</body>
+</html>
