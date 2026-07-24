@@ -1348,6 +1348,45 @@ function stangPinModal(e) {
   $('pin-modal').style.display = 'none';
 }
 
+/* ══ Service worker ══ */
+function registreraSW() {
+  if (!('serviceWorker' in navigator)) return;
+  if (location.protocol === 'file:') return;
+
+  navigator.serviceWorker.register('./sw.js').then(function (reg) {
+    reg.addEventListener('updatefound', function () {
+      const ny = reg.installing;
+      if (!ny) return;
+      ny.addEventListener('statechange', function () {
+        if (ny.state === 'installed' && navigator.serviceWorker.controller) {
+          visaUppdatering(reg);
+        }
+      });
+    });
+  }).catch(function () {});
+
+  let laddarOm = false;
+  navigator.serviceWorker.addEventListener('controllerchange', function () {
+    if (laddarOm) return;
+    laddarOm = true;
+    location.reload();
+  });
+}
+
+function visaUppdatering(reg) {
+  const t = $('toast');
+  t.innerHTML = 'Ny version tillgänglig ' +
+    '<button id="uppdatera-nu" style="margin-left:10px;background:var(--accent);' +
+    'border:none;border-radius:7px;padding:5px 11px;font-family:inherit;' +
+    'font-weight:600;font-size:13px;color:#0f0f1a;cursor:pointer">Uppdatera</button>';
+  t.className = 'visa ok';
+  clearTimeout(t._timer);
+  const knapp = document.getElementById('uppdatera-nu');
+  if (knapp) knapp.onclick = function () {
+    if (reg.waiting) reg.waiting.postMessage('skipWaiting');
+  };
+}
+
 /* ══ Start ══ */
 (function init() {
   let tema = 'morkt';
@@ -1374,6 +1413,7 @@ function stangPinModal(e) {
   window.addEventListener('offline', uppdateraNatstatus);
   setInterval(tommKo, 60000);
   uppdateraNatstatus();
+  registreraSW();
 
   try {
     const sparad = sessionStorage.getItem('travers_anv');
