@@ -6,7 +6,7 @@
  * nästa öppning – ingen behöver ta bort och lägga till ikonen på nytt.
  */
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const CACHE_NAME = 'travers-' + CACHE_VERSION;
 
 const FILER = [
