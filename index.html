@@ -10,7 +10,7 @@
 <title>Daglig tillsyn traverser</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Inter:wght@400;500;600&family=Roboto+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 /* ── KONFIGURATION ────────────────────────────────────────────
    Klistra in din Apps Script-URL i APPS_SCRIPT_URL längre ned
@@ -18,51 +18,47 @@
    ──────────────────────────────────────────────────────────── */
 
 :root {
-  --bg:        #161a1d;
-  --panel:     #1e2429;
-  --panel-2:   #262d33;
-  --line:      #333c44;
-  --text:      #e8ecef;
-  --muted:     #8d99a3;
+  --bg:        #0f0f1a;
+  --panel:     #1a1a2e;
+  --panel-2:   #242438;
+  --line:      #2e2e4a;
+  --text:      #e8e8f0;
+  --muted:     #7878a0;
   --accent:    #f5a623;
-  --accent-dk: #b87a12;
-  --green:     #3fb950;
-  --yellow:    #e3b341;
-  --red:       #f0523f;
-  --blue:      #4a9fd8;
-  --radius:    10px;
-  --shadow:    0 2px 10px rgba(0,0,0,.35);
-}
-
-html[data-tema="ljust"] {
-  --bg:      #f2f4f6;
-  --panel:   #ffffff;
-  --panel-2: #eaeef1;
-  --line:    #d3dae0;
-  --text:    #1b2126;
-  --muted:   #67727c;
-  --accent:  #c97b05;
-  --accent-dk: #a56404;
-  --green:   #1f8b34;
-  --yellow:  #b8860b;
-  --red:     #cf3520;
-  --blue:    #1e6fa8;
-  --shadow:  0 2px 10px rgba(0,0,0,.10);
+  --accent-dk: #d18c17;
+  --green:     #4ade80;
+  --yellow:    #f5a623;
+  --red:       #e85d4a;
+  --blue:      #7fa9e8;
+  --nav-bg:    rgba(15,15,26,0.92);
+  --radius:    12px;
+  --shadow:    0 2px 12px rgba(0,0,0,.4);
 }
 
 html[data-tema="klassiskt"] {
-  --bg:      #10243a;
-  --panel:   #17324f;
-  --panel-2: #1f3f61;
-  --line:    #2d5279;
-  --text:    #e6eef6;
-  --muted:   #93aac0;
-  --accent:  #ffc94d;
-  --accent-dk: #c99a24;
-  --green:   #4cc463;
-  --yellow:  #ffd166;
-  --red:     #ff6b52;
-  --blue:    #63b3e8;
+  --bg:      #1e2130;
+  --panel:   #272d40;
+  --panel-2: #313855;
+  --line:    #3d4560;
+  --text:    #dde3f5;
+  --muted:   #8090b8;
+  --nav-bg:  rgba(30,33,48,0.92);
+}
+
+html[data-tema="ljust"] {
+  --bg:      #eef0f5;
+  --panel:   #ffffff;
+  --panel-2: #f4f5f8;
+  --line:    #d0d4e0;
+  --text:    #1a1f33;
+  --muted:   #6b7494;
+  --accent:  #b57708;
+  --accent-dk: #96620a;
+  --green:   #1f8b34;
+  --red:     #cf3520;
+  --blue:    #1e6fa8;
+  --nav-bg:  rgba(238,240,245,0.92);
+  --shadow:  0 2px 10px rgba(0,0,0,.10);
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -71,41 +67,34 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
   font-size: 15px;
   line-height: 1.5;
   padding-bottom: env(safe-area-inset-bottom);
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, .tab, .btn, .grupp-rubrik {
-  font-family: 'Archivo', system-ui, sans-serif;
-}
-
-.mono { font-family: 'Roboto Mono', monospace; }
+.mono { font-family: 'DM Mono', monospace; }
 
 .wrap { max-width: 780px; margin: 0 auto; padding: 0 14px 40px; }
 
 /* ── Topp ── */
 header {
   position: sticky; top: 0; z-index: 40;
-  background: var(--panel);
+  background: var(--nav-bg);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--line);
   padding: calc(10px + env(safe-area-inset-top)) 14px 0;
 }
 .header-inner {
   max-width: 780px; margin: 0 auto;
-  display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: center; gap: 11px;
 }
-.logo {
-  width: 30px; height: 30px; flex: none;
-  border-radius: 7px;
-  background: var(--accent);
-  display: grid; place-items: center;
-  color: #16191c; font-weight: 700; font-size: 15px;
-  font-family: 'Archivo', sans-serif;
-}
-.titel { font-size: 15px; font-weight: 700; letter-spacing: -.01em; }
+.logo { width: 32px; height: 32px; flex: none; }
+.logo svg { display: block; width: 100%; height: 100%; }
+.titel { font-size: 16px; font-weight: 700; letter-spacing: -.3px; }
+.titel span { color: var(--accent); }
 .subtitel { font-size: 11px; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
 .header-hoger { margin-left: auto; display: flex; align-items: center; gap: 8px; }
 
@@ -133,7 +122,7 @@ header {
 .tabbar::-webkit-scrollbar { display: none; }
 .tab {
   background: none; border: none; color: var(--muted);
-  padding: 9px 12px; font-size: 12.5px; font-weight: 600;
+  padding: 11px 13px; font-size: 12.5px; font-weight: 600;
   letter-spacing: .05em; cursor: pointer; white-space: nowrap;
   border-bottom: 2px solid transparent;
 }
@@ -142,7 +131,7 @@ header {
 .badge {
   display: inline-block; min-width: 17px; padding: 1px 5px; margin-left: 4px;
   background: var(--panel-2); border-radius: 9px;
-  font-size: 10px; color: var(--text); font-family: 'Roboto Mono', monospace;
+  font-size: 10px; color: var(--text); font-family: 'DM Mono', monospace;
 }
 .badge.varning { background: var(--red); color: #fff; }
 
@@ -183,7 +172,7 @@ textarea { resize: vertical; min-height: 70px; }
 
 .btn {
   width: 100%; padding: 12px; border: none; border-radius: 8px;
-  background: var(--accent); color: #16191c;
+  background: var(--accent); color: #0f0f1a;
   font-size: 14.5px; font-weight: 600; cursor: pointer; letter-spacing: .01em;
 }
 .btn:hover:not(:disabled) { background: var(--accent-dk); color: #fff; }
@@ -202,11 +191,8 @@ textarea { resize: vertical; min-height: 70px; }
   background: var(--panel); border: 1px solid var(--line);
   border-radius: 14px; padding: 26px; box-shadow: var(--shadow);
 }
-.login-logo {
-  width: 48px; height: 48px; border-radius: 11px; background: var(--accent);
-  display: grid; place-items: center; margin: 0 auto 14px;
-  font-family: 'Archivo', sans-serif; font-weight: 700; font-size: 21px; color: #16191c;
-}
+.login-logo { width: 54px; height: 54px; margin: 0 auto 14px; }
+.login-logo svg { display: block; width: 100%; height: 100%; }
 .login-kort h1 { font-size: 19px; margin: 0 0 4px; text-align: center; }
 .login-kort .doknr {
   text-align: center; color: var(--muted); font-size: 11px;
@@ -218,7 +204,7 @@ textarea { resize: vertical; min-height: 70px; }
   display: flex; align-items: center; gap: 11px;
   background: var(--panel); border: 1px solid var(--line);
   border-left: 3px solid var(--line);
-  border-radius: var(--radius); padding: 11px 13px; margin-bottom: 7px;
+  border-radius: var(--radius); padding: 13px 14px; margin-bottom: 8px;
   cursor: pointer; text-align: left; width: 100%;
   color: var(--text); font-family: inherit; font-size: inherit;
 }
@@ -229,7 +215,7 @@ textarea { resize: vertical; min-height: 70px; }
 .travers-rad.grå  { border-left-color: var(--muted); }
 
 .travers-nr {
-  font-family: 'Roboto Mono', monospace; font-weight: 600; font-size: 13px;
+  font-family: 'DM Mono', monospace; font-weight: 600; font-size: 13px;
   background: var(--panel-2); border-radius: 6px;
   padding: 5px 7px; min-width: 46px; text-align: center; flex: none;
 }
@@ -257,19 +243,19 @@ textarea { resize: vertical; min-height: 70px; }
 }
 .grupp-nr {
   width: 21px; height: 21px; border-radius: 5px; flex: none;
-  background: var(--accent); color: #16191c;
+  background: var(--accent); color: #0f0f1a;
   display: grid; place-items: center;
-  font-size: 11px; font-family: 'Roboto Mono', monospace; font-weight: 600;
+  font-size: 11px; font-family: 'DM Mono', monospace; font-weight: 600;
 }
 
 .punkt {
   background: var(--panel); border: 1px solid var(--line);
-  border-radius: var(--radius); padding: 11px 13px; margin-bottom: 7px;
+  border-radius: var(--radius); padding: 13px 14px; margin-bottom: 8px;
 }
 .punkt.anmarkt { border-color: var(--red); }
 .punkt-topp { display: flex; gap: 9px; align-items: flex-start; }
 .punkt-nr {
-  font-family: 'Roboto Mono', monospace; font-size: 12px;
+  font-family: 'DM Mono', monospace; font-size: 12px;
   color: var(--muted); flex: none; padding-top: 2px; min-width: 24px;
 }
 .punkt-text { flex: 1; font-size: 13.5px; line-height: 1.45; }
@@ -278,7 +264,7 @@ textarea { resize: vertical; min-height: 70px; }
 .val button {
   flex: 1; padding: 9px 6px; border-radius: 7px;
   background: var(--panel-2); border: 1px solid var(--line);
-  color: var(--muted); font-family: 'Archivo', sans-serif;
+  color: var(--muted); font-family: 'DM Sans', sans-serif;
   font-size: 12.5px; font-weight: 600; cursor: pointer;
 }
 .val button.vald-ok { background: var(--green); border-color: var(--green); color: #fff; }
@@ -322,7 +308,7 @@ textarea { resize: vertical; min-height: 70px; }
 }
 .hist-rad.anm { border-left-color: var(--red); }
 .hist-topp { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
-.hist-tid { font-family: 'Roboto Mono', monospace; font-size: 12px; color: var(--muted); }
+.hist-tid { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); }
 .hist-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
 .hist-anm {
   margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line);
@@ -336,7 +322,7 @@ textarea { resize: vertical; min-height: 70px; }
   background: var(--panel); border: 1px solid var(--line);
   border-radius: var(--radius); padding: 13px;
 }
-.stat-varde { font-family: 'Roboto Mono', monospace; font-size: 25px; font-weight: 600; }
+.stat-varde { font-family: 'DM Mono', monospace; font-size: 25px; font-weight: 600; }
 .stat-etikett {
   font-size: 10.5px; color: var(--muted); text-transform: uppercase;
   letter-spacing: .06em; margin-top: 2px;
@@ -359,7 +345,7 @@ textarea { resize: vertical; min-height: 70px; }
   font-size: 9.5px; font-weight: 600; padding: 2px 6px; border-radius: 4px;
   letter-spacing: .05em; text-transform: uppercase;
 }
-.roll-admin { background: var(--accent); color: #16191c; }
+.roll-admin { background: var(--accent); color: #0f0f1a; }
 .roll-personal { background: var(--panel-2); color: var(--muted); }
 .radera-knapp {
   background: none; border: 1px solid var(--line); color: var(--red);
@@ -407,7 +393,15 @@ textarea { resize: vertical; min-height: 70px; }
 <!-- ══ INLOGGNING ══ -->
 <div id="login-vy">
   <div class="login-kort">
-    <div class="login-logo">T</div>
+    <div class="login-logo">
+      <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+<rect width="32" height="32" rx="8" fill="#f5a623"/>
+<path d="M16 5.5v3.2" stroke="#0f0f1a" stroke-width="2.2" stroke-linecap="round"/>
+<path d="M12.6 8.7h6.8l-1.2 2.8h-4.4z" fill="#0f0f1a"/>
+<path d="M16 11.5v5.2a4.6 4.6 0 1 1-4.6 4.6" stroke="#0f0f1a" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+<path d="M16 16.7l4.1 4.1" stroke="#0f0f1a" stroke-width="1.6" stroke-linecap="round" opacity=".5"/>
+</svg>
+    </div>
     <h1>Daglig tillsyn</h1>
     <div class="doknr">FRM-08075 · Traverser och telfrar</div>
 
@@ -428,9 +422,17 @@ textarea { resize: vertical; min-height: 70px; }
 <div id="app-vy" style="display:none">
   <header>
     <div class="header-inner">
-      <div class="logo">T</div>
+      <div class="logo">
+        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+<rect width="32" height="32" rx="8" fill="#f5a623"/>
+<path d="M16 5.5v3.2" stroke="#0f0f1a" stroke-width="2.2" stroke-linecap="round"/>
+<path d="M12.6 8.7h6.8l-1.2 2.8h-4.4z" fill="#0f0f1a"/>
+<path d="M16 11.5v5.2a4.6 4.6 0 1 1-4.6 4.6" stroke="#0f0f1a" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+<path d="M16 16.7l4.1 4.1" stroke="#0f0f1a" stroke-width="1.6" stroke-linecap="round" opacity=".5"/>
+</svg>
+      </div>
       <div>
-        <div class="titel">Daglig tillsyn</div>
+        <div class="titel">Daglig <span>tillsyn</span></div>
         <div class="subtitel" id="user-etikett">–</div>
       </div>
       <div class="header-hoger">
@@ -549,7 +551,6 @@ textarea { resize: vertical; min-height: 70px; }
         <br><br>
         Dokument FRM-08075, version 2 · Plant Norrköping · Ansvarig: Fredrik Andersson
       </div>
-      <button class="btn sekundar" onclick="laddaOm()">Uppdatera data från servern</button>
     </div>
 
   </div>
@@ -767,8 +768,6 @@ async function laddaData() {
     $('traverslista').innerHTML = '<div class="tom">Kunde inte hämta objektlistan.<br>Kontrollera nätverket och försök igen.</div>';
   }
 }
-
-function laddaOm() { toast('Uppdaterar…'); laddaData(); }
 
 /* ══ Navigering ══ */
 function visaSida(namn) {
