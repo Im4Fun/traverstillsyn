@@ -190,7 +190,8 @@ textarea { resize: vertical; min-height: 70px; }
 .login-innehall { width: 100%; max-width: 380px; text-align: center; }
 .login-logo { font-size: 46px; line-height: 1; margin-bottom: 14px; }
 .login-innehall h1 {
-  font-size: 30px; font-weight: 700; margin: 0 0 6px; letter-spacing: -.5px;
+  font-size: 30px; font-weight: 700; margin: 0 0 8px;
+  letter-spacing: -.5px; line-height: 1.18;
 }
 .login-under { color: var(--muted); font-size: 15px; margin-bottom: 22px; }
 .login-innehall .falt { text-align: left; margin-bottom: 16px; }
@@ -213,8 +214,13 @@ textarea { resize: vertical; min-height: 70px; }
 .falt-hjalp { font-size: 12px; color: var(--muted); margin-top: 5px; }
 
 /* ── Meny ── */
-.app-namn { font-size: 17px; font-weight: 700; letter-spacing: -.3px; }
+.app-namn { font-size: 17px; font-weight: 700; letter-spacing: -.3px; line-height: 1.2; }
 .app-namn span { color: var(--accent); }
+.app-namn em {
+  display: block; font-style: normal; font-weight: 500;
+  font-size: 11px; letter-spacing: .09em; text-transform: uppercase;
+  color: var(--muted); margin-top: 1px;
+}
 .anv-block { text-align: right; line-height: 1.25; }
 .anv-namn { font-size: 14px; font-weight: 700; }
 .anv-rad { display: flex; align-items: center; gap: 7px; justify-content: flex-end; margin-top: 2px; }
@@ -449,7 +455,7 @@ textarea { resize: vertical; min-height: 70px; }
 <div id="login-vy">
   <div class="login-innehall">
     <div class="login-logo">🏗️</div>
-    <h1>Daglig tillsyn</h1>
+    <h1>Daglig tillsyn<br>Traverser</h1>
     <div class="login-under">Logga in för att fortsätta</div>
 
     <div class="tema-valjare">
@@ -484,7 +490,7 @@ textarea { resize: vertical; min-height: 70px; }
 <div id="app-vy" style="display:none">
   <header>
     <div class="header-inner">
-      <div class="app-namn">Daglig <span>tillsyn</span></div>
+      <div class="app-namn">Daglig <span>tillsyn</span><em>Traverser</em></div>
       <div class="header-hoger">
         <span class="natstatus" id="natstatus">Online</span>
         <div class="anv-block">
