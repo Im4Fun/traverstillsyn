@@ -81,6 +81,7 @@ body {
 /* ── Topp ── */
 header {
   position: sticky; top: 0; z-index: 40;
+  /* meny positioneras mot denna */
   background: var(--nav-bg);
   -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
@@ -159,9 +160,9 @@ header {
   margin-bottom: 5px; font-weight: 500;
 }
 input, select, textarea {
-  width: 100%; padding: 10px 11px;
+  width: 100%; padding: 13px 15px;
   background: var(--panel-2); color: var(--text);
-  border: 1px solid var(--line); border-radius: 8px;
+  border: 1px solid var(--line); border-radius: 11px;
   font-family: inherit; font-size: 15px;
 }
 input:focus, select:focus, textarea:focus {
@@ -171,7 +172,7 @@ textarea { resize: vertical; min-height: 70px; }
 .rad-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
 .btn {
-  width: 100%; padding: 12px; border: none; border-radius: 8px;
+  width: 100%; padding: 14px; border: none; border-radius: 11px;
   background: var(--accent); color: #0f0f1a;
   font-size: 14.5px; font-weight: 600; cursor: pointer; letter-spacing: .01em;
 }
@@ -184,20 +185,74 @@ textarea { resize: vertical; min-height: 70px; }
 
 /* ── Inloggning ── */
 #login-vy {
-  min-height: 100vh; display: grid; place-items: center; padding: 20px;
+  min-height: 100vh; display: grid; place-items: center; padding: 24px 20px;
 }
-.login-kort {
-  width: 100%; max-width: 340px;
+.login-innehall { width: 100%; max-width: 380px; text-align: center; }
+.login-logo { font-size: 46px; line-height: 1; margin-bottom: 14px; }
+.login-innehall h1 {
+  font-size: 30px; font-weight: 700; margin: 0 0 6px; letter-spacing: -.5px;
+}
+.login-under { color: var(--muted); font-size: 15px; margin-bottom: 22px; }
+.login-innehall .falt { text-align: left; margin-bottom: 16px; }
+.login-fot {
+  margin-top: 30px; color: var(--muted); font-size: 12.5px; letter-spacing: .04em;
+}
+
+.tema-valjare { display: flex; gap: 9px; justify-content: center; margin-bottom: 26px; }
+.tema-btn {
+  padding: 11px 14px; border-radius: 11px;
+  background: var(--panel-2); border: 2px solid transparent;
+  color: var(--muted); cursor: pointer; font-family: inherit;
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  min-width: 72px;
+}
+.tema-btn .tema-emoji { font-size: 20px; line-height: 1; }
+.tema-btn .tema-namn { font-size: 12.5px; font-weight: 600; }
+.tema-btn.vald { border-color: var(--accent); color: var(--accent); background: rgba(245,166,35,.08); }
+
+.falt-hjalp { font-size: 12px; color: var(--muted); margin-top: 5px; }
+
+/* ── Meny ── */
+.app-namn { font-size: 17px; font-weight: 700; letter-spacing: -.3px; }
+.app-namn span { color: var(--accent); }
+.anv-block { text-align: right; line-height: 1.25; }
+.anv-namn { font-size: 14px; font-weight: 700; }
+.anv-rad { display: flex; align-items: center; gap: 7px; justify-content: flex-end; margin-top: 2px; }
+.meny-knapp {
+  background: none; border: none; color: var(--muted);
+  font-family: inherit; font-size: 13px; cursor: pointer; padding: 0;
+}
+.meny-knapp:hover { color: var(--accent); }
+
+.meny {
+  position: absolute; right: 14px; top: 100%;
   background: var(--panel); border: 1px solid var(--line);
-  border-radius: 14px; padding: 26px; box-shadow: var(--shadow);
+  border-radius: var(--radius); box-shadow: var(--shadow);
+  overflow: hidden; min-width: 172px; z-index: 60;
 }
-.login-logo { width: 54px; height: 54px; margin: 0 auto 14px; }
-.login-logo svg { display: block; width: 100%; height: 100%; }
-.login-kort h1 { font-size: 19px; margin: 0 0 4px; text-align: center; }
-.login-kort .doknr {
-  text-align: center; color: var(--muted); font-size: 11px;
-  margin-bottom: 22px; letter-spacing: .06em;
+.meny-rad {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  background: none; border: none; color: var(--text);
+  padding: 13px 16px; font-family: inherit; font-size: 15px;
+  cursor: pointer; text-align: left;
 }
+.meny-rad:hover { background: var(--panel-2); }
+.meny-rad + .meny-rad { border-top: 1px solid var(--line); }
+.meny-rad.fara { color: var(--red); }
+
+/* ── Modal ── */
+.modal-bakgrund {
+  position: fixed; inset: 0; z-index: 90;
+  background: rgba(0,0,0,.6);
+  -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px);
+  display: grid; place-items: center; padding: 20px;
+}
+.modal {
+  width: 100%; max-width: 360px;
+  background: var(--panel); border: 1px solid var(--line);
+  border-radius: 16px; padding: 22px; box-shadow: var(--shadow);
+}
+.modal h2 { font-size: 19px; margin: 0 0 18px; }
 
 /* ── Traverslista ── */
 .travers-rad {
@@ -392,29 +447,36 @@ textarea { resize: vertical; min-height: 70px; }
 
 <!-- ══ INLOGGNING ══ -->
 <div id="login-vy">
-  <div class="login-kort">
-    <div class="login-logo">
-      <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-<rect width="32" height="32" rx="8" fill="#f5a623"/>
-<path d="M16 5.5v3.2" stroke="#0f0f1a" stroke-width="2.2" stroke-linecap="round"/>
-<path d="M12.6 8.7h6.8l-1.2 2.8h-4.4z" fill="#0f0f1a"/>
-<path d="M16 11.5v5.2a4.6 4.6 0 1 1-4.6 4.6" stroke="#0f0f1a" stroke-width="2.6" stroke-linecap="round" fill="none"/>
-<path d="M16 16.7l4.1 4.1" stroke="#0f0f1a" stroke-width="1.6" stroke-linecap="round" opacity=".5"/>
-</svg>
-    </div>
+  <div class="login-innehall">
+    <div class="login-logo">🏗️</div>
     <h1>Daglig tillsyn</h1>
-    <div class="doknr">FRM-08075 · Traverser och telfrar</div>
+    <div class="login-under">Logga in för att fortsätta</div>
+
+    <div class="tema-valjare">
+      <button class="tema-btn" data-tema-val="morkt" onclick="valjTema('morkt')">
+        <span class="tema-emoji">🌑</span><span class="tema-namn">Mörkt</span>
+      </button>
+      <button class="tema-btn" data-tema-val="klassiskt" onclick="valjTema('klassiskt')">
+        <span class="tema-emoji">🌗</span><span class="tema-namn">Klassiskt</span>
+      </button>
+      <button class="tema-btn" data-tema-val="ljust" onclick="valjTema('ljust')">
+        <span class="tema-emoji">☀️</span><span class="tema-namn">Ljust</span>
+      </button>
+    </div>
 
     <div class="falt">
       <label for="login-namn">Namn</label>
-      <input type="text" id="login-namn" autocomplete="username" placeholder="För- och efternamn">
+      <input type="text" id="login-namn" autocomplete="username" placeholder="Ditt namn">
     </div>
     <div class="falt">
       <label for="login-pin">PIN-kod</label>
       <input type="password" id="login-pin" inputmode="numeric" autocomplete="current-password" placeholder="••••">
+      <div class="falt-hjalp">Minst 4 siffror</div>
     </div>
     <button class="btn" id="login-knapp" onclick="loggaIn()">Logga in</button>
-    <div id="login-fel" style="color:var(--red);font-size:12.5px;margin-top:10px;text-align:center;display:none"></div>
+    <div id="login-fel" style="color:var(--red);font-size:13px;margin-top:12px;text-align:center;display:none"></div>
+
+    <div class="login-fot">© 2026 | CARÅ</div>
   </div>
 </div>
 
@@ -422,23 +484,16 @@ textarea { resize: vertical; min-height: 70px; }
 <div id="app-vy" style="display:none">
   <header>
     <div class="header-inner">
-      <div class="logo">
-        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-<rect width="32" height="32" rx="8" fill="#f5a623"/>
-<path d="M16 5.5v3.2" stroke="#0f0f1a" stroke-width="2.2" stroke-linecap="round"/>
-<path d="M12.6 8.7h6.8l-1.2 2.8h-4.4z" fill="#0f0f1a"/>
-<path d="M16 11.5v5.2a4.6 4.6 0 1 1-4.6 4.6" stroke="#0f0f1a" stroke-width="2.6" stroke-linecap="round" fill="none"/>
-<path d="M16 16.7l4.1 4.1" stroke="#0f0f1a" stroke-width="1.6" stroke-linecap="round" opacity=".5"/>
-</svg>
-      </div>
-      <div>
-        <div class="titel">Daglig <span>tillsyn</span></div>
-        <div class="subtitel" id="user-etikett">–</div>
-      </div>
+      <div class="app-namn">Daglig <span>tillsyn</span></div>
       <div class="header-hoger">
         <span class="natstatus" id="natstatus">Online</span>
-        <button class="ikonknapp" onclick="bytTema()" title="Byt tema">◐</button>
-        <button class="ikonknapp" onclick="loggaUt()" title="Logga ut">⏻</button>
+        <div class="anv-block">
+          <div class="anv-namn" id="user-etikett">–</div>
+          <div class="anv-rad">
+            <span class="roll-tagg roll-admin" id="user-roll" style="display:none">Admin</span>
+            <button class="meny-knapp" onclick="vaxlaMeny(event)">▾ Meny</button>
+          </div>
+        </div>
       </div>
     </div>
     <div class="tabbar">
@@ -447,7 +502,11 @@ textarea { resize: vertical; min-height: 70px; }
       <button class="tab admin-bara" data-sida="stats" onclick="visaSida('stats')" style="display:none">STATS</button>
       <button class="tab admin-bara" data-sida="traverser" onclick="visaSida('traverser')" style="display:none">OBJEKT</button>
       <button class="tab admin-bara" data-sida="anvandare" onclick="visaSida('anvandare')" style="display:none">ANV</button>
-      <button class="tab" data-sida="konto" onclick="visaSida('konto')">KONTO</button>
+    </div>
+
+    <div class="meny" id="meny" style="display:none">
+      <button class="meny-rad" onclick="oppnaPinModal()"><span>🔑</span> Byt PIN</button>
+      <button class="meny-rad fara" onclick="loggaUt()"><span>↩</span> Logga ut</button>
     </div>
   </header>
 
@@ -535,24 +594,20 @@ textarea { resize: vertical; min-height: 70px; }
       <div id="anvandarlista"></div>
     </div>
 
-    <!-- ── Konto ── -->
-    <div class="sida" id="sida-konto">
-      <div class="avsnitt">Byt PIN-kod</div>
-      <div class="falt"><label>Nuvarande PIN</label><input type="password" id="pin-gammal" inputmode="numeric"></div>
-      <div class="falt"><label>Ny PIN (4–8 siffror)</label><input type="password" id="pin-ny" inputmode="numeric"></div>
-      <button class="btn" onclick="bytPin()">Spara ny PIN</button>
+  </div>
+</div>
 
-      <div class="avsnitt">Om appen</div>
-      <div class="info">
-        Daglig tillsyn av traverser och telfrar enligt AFS 2023:11 29 §. Tillsynen utförs
-        i samband med användning, i enlighet med tillverkarens instruktioner. Brister
-        eller skador rapporteras till arbetsledningen före fortsatt användning, och
-        arbetsorder skrivs till UH-avdelningen.
-        <br><br>
-        Dokument FRM-08075, version 2 · Plant Norrköping · Ansvarig: Fredrik Andersson
-      </div>
+<!-- ══ MODAL: byt PIN ══ -->
+<div class="modal-bakgrund" id="pin-modal" style="display:none" onclick="stangPinModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <h2>Byt PIN-kod</h2>
+    <div class="falt"><label>Nuvarande PIN</label><input type="password" id="pin-gammal" inputmode="numeric"></div>
+    <div class="falt"><label>Ny PIN</label><input type="password" id="pin-ny" inputmode="numeric">
+      <div class="falt-hjalp">4–8 siffror</div></div>
+    <div class="rad-2">
+      <button class="btn sekundar" onclick="stangPinModal()">Avbryt</button>
+      <button class="btn" onclick="bytPin()">Spara</button>
     </div>
-
   </div>
 </div>
 
@@ -574,7 +629,7 @@ let aktivTravers = null;
 let svar        = {};   // punktId -> { varde: 0|1|2, kommentar }
 const KO_NYCKEL = 'travers_ko_v1';
 
-/* ══ Generella råd (från FRM-08075 sida 3) ══ */
+/* ══ Generella råd ══ */
 const RAD = {
   '1.1': 'Kontrollera linan varje dag – den är en slitagedel som lätt skadas. Kontrollera att linan ej har s.k. kinkbildning eller klämskada. Trådbrott bör ej förekomma. Synliga trådbrott är oftast en indikering på ett större antal osynliga brott.',
   '1.2': 'Kontrollera från golvnivå att synlig del av linan ligger korrekt i linhjulens spår, såväl vid lyftmaskineri som krokblock. Vid sneddrag eller slaklina kan linan hoppa av linhjulen och därmed skadas. Var därför uppmärksam på förändrade linvinklar.',
@@ -721,6 +776,7 @@ async function loggaIn() {
 }
 
 function loggaUt() {
+  stangMeny();
   if (hamtaKo().length && !confirm('Det finns kontroller som inte skickats. Logga ut ändå?')) return;
   sessionStorage.removeItem('travers_anv');
   anvandare = null;
@@ -732,8 +788,8 @@ function loggaUt() {
 function startaApp() {
   $('login-vy').style.display = 'none';
   $('app-vy').style.display = 'block';
-  $('user-etikett').textContent = anvandare.namn +
-    (anvandare.roll === 'admin' ? ' · Admin' : '');
+  $('user-etikett').textContent = anvandare.namn;
+  $('user-roll').style.display = anvandare.roll === 'admin' ? '' : 'none';
 
   const adminFlikar = document.querySelectorAll('.admin-bara');
   adminFlikar.forEach(function (t) {
@@ -1255,26 +1311,57 @@ async function bytPin() {
       action: 'bytPin', anvandareId: anvandare.id, gammalPin: gammal, nyPin: ny
     });
     if (!r.ok) throw new Error(r.fel);
-    $('pin-gammal').value = ''; $('pin-ny').value = '';
+    stangPinModal();
     toast('PIN-koden är bytt', 'ok');
   } catch (e) { toast(e.message, 'fel'); }
 }
 
 /* ══ Tema ══ */
-const TEMAN = ['morkt', 'klassiskt', 'ljust'];
-function bytTema() {
-  const nu = document.documentElement.getAttribute('data-tema') || 'morkt';
-  const nasta = TEMAN[(TEMAN.indexOf(nu) + 1) % TEMAN.length];
-  document.documentElement.setAttribute('data-tema', nasta);
-  try { localStorage.setItem('travers_tema', nasta); } catch (e) {}
+function valjTema(tema) {
+  document.documentElement.setAttribute('data-tema', tema);
+  try { localStorage.setItem('travers_tema', tema); } catch (e) {}
+  markeraTema(tema);
+}
+
+function markeraTema(tema) {
+  document.querySelectorAll('.tema-btn').forEach(function (b) {
+    b.classList.toggle('vald', b.getAttribute('data-tema-val') === tema);
+  });
+}
+
+/* ══ Meny ══ */
+function vaxlaMeny(e) {
+  if (e) e.stopPropagation();
+  const m = $('meny');
+  m.style.display = m.style.display === 'none' ? 'block' : 'none';
+}
+function stangMeny() { $('meny').style.display = 'none'; }
+
+/* ══ PIN-modal ══ */
+function oppnaPinModal() {
+  stangMeny();
+  $('pin-gammal').value = ''; $('pin-ny').value = '';
+  $('pin-modal').style.display = 'grid';
+}
+function stangPinModal(e) {
+  if (e && e.target !== e.currentTarget) return;
+  $('pin-modal').style.display = 'none';
 }
 
 /* ══ Start ══ */
 (function init() {
-  try {
-    const tema = localStorage.getItem('travers_tema');
-    if (tema) document.documentElement.setAttribute('data-tema', tema);
-  } catch (e) {}
+  let tema = 'morkt';
+  try { tema = localStorage.getItem('travers_tema') || 'morkt'; } catch (e) {}
+  document.documentElement.setAttribute('data-tema', tema);
+  markeraTema(tema);
+
+  document.addEventListener('click', function (e) {
+    const m = $('meny');
+    if (m && m.style.display === 'block' && !m.contains(e.target)) stangMeny();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') { stangMeny(); $('pin-modal').style.display = 'none'; }
+  });
 
   $('login-pin').addEventListener('keydown', function (e) {
     if (e.key === 'Enter') loggaIn();
