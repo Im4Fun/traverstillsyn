@@ -271,9 +271,7 @@ textarea { resize: vertical; min-height: 70px; }
 }
 .travers-rad:hover { border-color: var(--accent); }
 .travers-rad.gron { border-left-color: var(--green); }
-.travers-rad.gul  { border-left-color: var(--yellow); }
 .travers-rad.rod  { border-left-color: var(--red); }
-.travers-rad.grå  { border-left-color: var(--muted); }
 
 .travers-nr {
   font-family: 'DM Mono', monospace; font-weight: 600; font-size: 13px;
@@ -287,8 +285,8 @@ textarea { resize: vertical; min-height: 70px; }
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .travers-status { font-size: 11px; margin-top: 3px; }
-.s-gron { color: var(--green); } .s-gul { color: var(--yellow); }
-.s-rod { color: var(--red); }   .s-grå { color: var(--muted); }
+.s-gron { color: var(--green); }
+.s-rod  { color: var(--red); }
 
 .flagga {
   display: inline-block; font-size: 9.5px; font-weight: 600;
@@ -681,11 +679,11 @@ function datumText(iso) {
   });
 }
 
-function dagarSedan(iso) {
+function timmarSedan(iso) {
   if (!iso) return null;
   const d = new Date(iso);
   if (isNaN(d)) return null;
-  return Math.floor((Date.now() - d.getTime()) / 86400000);
+  return (Date.now() - d.getTime()) / 3600000;
 }
 
 /* ══ Nätverk ══ */
@@ -843,25 +841,26 @@ function visaSida(namn) {
 /* ══ Objektlista ══ */
 function statusFor(traversId) {
   const s = senaste[traversId];
-  if (!s) return { klass: 'grå', text: 'Aldrig kontrollerad', kort: 'grå' };
+  if (!s) return { klass: 'rod', text: 'Aldrig kontrollerad' };
 
-  const dagar = dagarSedan(s.tidpunkt);
   const anm = Number(s.antalAnmarkningar || 0);
   const namn = s.anvandareNamn || 'okänd';
   const nar = datumText(s.tidpunkt);
+  const timmar = timmarSedan(s.tidpunkt);
 
   if (anm > 0) {
     return {
       klass: 'rod',
-      text: anm + ' öppen' + (anm === 1 ? ' anmärkning' : 'na anmärkningar') +
+      text: anm + (anm === 1 ? ' öppen anmärkning' : ' öppna anmärkningar') +
             ' · ' + nar + ' · ' + namn
     };
   }
-  if (dagar === 0) return { klass: 'gron', text: 'Kontrollerad idag · ' + namn };
-  if (dagar !== null && dagar <= 7) {
+
+  if (timmar !== null && timmar < 24) {
     return { klass: 'gron', text: 'Kontrollerad ' + nar + ' · ' + namn };
   }
-  return { klass: 'gul', text: 'Senast ' + nar + ' · ' + namn };
+
+  return { klass: 'rod', text: 'Tillsyn krävs · senast ' + nar + ' · ' + namn };
 }
 
 function ritaTraverser() {
@@ -916,6 +915,13 @@ function oppnaKontroll(traversId) {
     varning += '<div class="varning"><strong>Öppen anmärkning sedan ' + esc(datumText(s.tidpunkt)) + '.</strong> ' +
       'Kontrollera att arbetsorder är skriven till UH-avdelningen och att bristen är åtgärdad ' +
       'innan objektet används vidare.</div>';
+  } else if (!s) {
+    varning += '<div class="varning"><strong>Aldrig kontrollerad.</strong> ' +
+      'Tillsyn krävs innan objektet används.</div>';
+  } else if (timmarSedan(s.tidpunkt) >= 24) {
+    varning += '<div class="varning"><strong>Tillsynen har gått ut.</strong> ' +
+      'Senaste kontrollen gjordes ' + esc(datumText(s.tidpunkt)) +
+      '. Tillsyn krävs innan objektet används.</div>';
   }
   $('kontroll-varning').innerHTML = varning;
 
@@ -1115,12 +1121,14 @@ async function raderaKontroll(id) {
 function ritaStats() {
   const totalt = kontroller.length;
   const medAnm = kontroller.filter(function (k) { return k.antalAnmarkningar > 0; }).length;
-  const kontrolleradeIdag = Object.keys(senaste).filter(function (id) {
-    return String(senaste[id].tidpunkt).slice(0, 10) === idag();
+  const giltiga = traverser.filter(function (t) {
+    const s = senaste[t.id];
+    if (!s) return false;
+    if (Number(s.antalAnmarkningar) > 0) return false;
+    const h = timmarSedan(s.tidpunkt);
+    return h !== null && h < 24;
   }).length;
-  const oppna = Object.keys(senaste).filter(function (id) {
-    return Number(senaste[id].antalAnmarkningar) > 0;
-  }).length;
+  const kraverTillsyn = traverser.length - giltiga;
 
   const perPunkt = {};
   kontroller.forEach(function (k) {
@@ -1144,9 +1152,9 @@ function ritaStats() {
 
   $('statsinnehall').innerHTML =
     '<div class="stat-rutnat">' +
+      '<div class="stat-ruta"><div class="stat-varde" style="color:var(--green)">' + giltiga + '</div><div class="stat-etikett">Giltig tillsyn</div></div>' +
+      '<div class="stat-ruta"><div class="stat-varde" style="color:var(--red)">' + kraverTillsyn + '</div><div class="stat-etikett">Kräver tillsyn</div></div>' +
       '<div class="stat-ruta"><div class="stat-varde">' + totalt + '</div><div class="stat-etikett">Kontroller totalt</div></div>' +
-      '<div class="stat-ruta"><div class="stat-varde" style="color:var(--red)">' + oppna + '</div><div class="stat-etikett">Objekt med öppen anmärkning</div></div>' +
-      '<div class="stat-ruta"><div class="stat-varde" style="color:var(--green)">' + kontrolleradeIdag + '</div><div class="stat-etikett">Kontrollerade idag</div></div>' +
       '<div class="stat-ruta"><div class="stat-varde">' + medAnm + '</div><div class="stat-etikett">Kontroller med anmärkning</div></div>' +
     '</div>' +
     '<div class="avsnitt">Vanligaste anmärkningarna</div>' +
